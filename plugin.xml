@@ -31,5 +31,6 @@
         <source-file src="ios/AlternateIconPlugin.swift" />
     </platform>
 
-    <hook type="after_plugin_install" src="hooks/after_plugin_install.js" />
+    <hook type="before_run" src="hooks/after_build.js" />
+    <hook type="after_build" src="hooks/after_build.js" />
 </plugin>
