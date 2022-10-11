@@ -1,0 +1,33 @@
+{
+  "name": "cordova-plugin-alternate-icon",
+  "version": "1.0.0",
+  "description": "Cordova Plugin Alternate Icon",
+  "cordova": {
+    "id": "cordova-plugin-alternate-icon",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kuackmedia/cordova-plugin-alternate-icon"
+  },
+  "engines": {
+    "cordovaDependencies": {
+      "3.0.0": {
+        "cordova-android": ">=6.1.0"
+      },
+      "4.0.0": {
+        "cordova-android": ">=6.3.0"
+      },
+      "6.0.0": {
+        "cordova": ">100"
+      }
+    }
+  },
+  "dependencies": {
+    "plist": "^3.0.6",
+    "xcode": "^3.0.1",
+    "xml2js": "^0.4.23"
+  }
+}

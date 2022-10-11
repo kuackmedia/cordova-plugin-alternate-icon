@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-alternate-icon"
+        version="0.1">
+    <name>Alternate Icon</name>
+    <description>Cordova Plugin Alternate Icon</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova</keywords>
+    
+    <js-module src="www/AlternateIcon.js" name="AlternateIcon">
+        <clobbers target="window.plugins.AlternateIcon" />
+    </js-module>
+
+    <platform name="android">
+        <config-file target="config.xml" parent="/*">
+            <feature name="AlternateIcon">
+                <param name="android-package" value="com.kuack.plugins.AlternateIconPlugin" />
+            </feature>
+        </config-file>
+
+        <source-file src="android/AlternateIconPlugin.java" target-dir="src/com/kuack/plugins/" />
+    </platform>
+    
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="AlternateIcon">
+                <param name="ios-package" value="AlternateIconPlugin" />
+            </feature>
+        </config-file>
+        
+        <source-file src="ios/AlternateIconPlugin.swift" />
+    </platform>
+
+    <hook type="after_plugin_install" src="hooks/after_plugin_install.js" />
+</plugin>
