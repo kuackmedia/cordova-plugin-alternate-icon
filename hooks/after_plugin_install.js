@@ -18,11 +18,12 @@ module.exports = async (context) => {
     const iconFiles = fs.readdirSync(iconsDirPath, { withFileTypes: true })
         .map(file => file.name)
         .filter(fileName => fileName.endsWith('.png'));
+    const iconPaths = iconFiles.map(iconFileName => path.join(iconsDirPath, iconFileName));
 
     const isInstallingAndroid = cordova.platforms.includes('android');
     if (isInstallingAndroid) {
         updateAndroidManifest(androidRoot, iconFiles);
-        
+        copyDrawables(androidRoot, iconFiles, iconPaths);
         updateJsVars(iconFiles, [
             path.join(androidRoot, 'platform_www', 'plugins', 'cordova-plugin-alternate-icon', 'www', 'AlternateIcon.js')
         ]);
@@ -32,10 +33,7 @@ module.exports = async (context) => {
     if (isInstallingiOS) {
         const appName = await getAppNameFromConfig(projectRoot);
         updatePlist(iosRoot, appName, iconFiles);
-        
-        const iconPaths = iconFiles.map(iconFileName => path.join(iconsDirPath, iconFileName));
         copyResources(iosRoot, appName, iconPaths);
-        
         updateJsVars(iconFiles, [
             path.join(iosRoot, 'www',          'plugins', 'cordova-plugin-alternate-icon', 'www', 'AlternateIcon.js'),
             path.join(iosRoot, 'platform_www', 'plugins', 'cordova-plugin-alternate-icon', 'www', 'AlternateIcon.js'),
@@ -103,6 +101,23 @@ function getActivityAliasesForIcons(packageName, activityAliases, iconFiles) {
     });
 
     return activityAliases;
+}
+
+function copyDrawables(androidRoot, iconFiles, iconPaths) {
+    const resRoot = path.join(androidRoot, 'app', 'src', 'main', 'res');
+    const drawableDirs = [
+        path.join(resRoot, 'drawable-hdpi'),
+        path.join(resRoot, 'drawable-mdpi'),
+        path.join(resRoot, 'drawable-xhdpi'),
+        path.join(resRoot, 'drawable-xxhdpi'),
+        path.join(resRoot, 'drawable-xxxhdpi'),
+    ];
+
+    drawableDirs.forEach(drawableDir => {
+        iconPaths.forEach((iconFilePath, i) => {
+            fs.copyFileSync(iconFilePath, path.join(drawableDir, iconFiles[i]));
+        });
+    });
 }
 
 async function getAppNameFromConfig(projectRoot) {
