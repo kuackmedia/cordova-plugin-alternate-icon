@@ -63,7 +63,7 @@ function updateAndroidManifest(androidRoot, iconFiles) {
         const activityRoot = applicationRoot.activity[0];
         const schemeIntent = getSchemeIntent(activityRoot);
 
-        applicationRoot['activity-alias'] = getActivityAliasXML({
+        applicationRoot['activity-alias'] = getActivityAlias({
             packageName,
             activityAliases,
             iconFiles,
@@ -91,7 +91,7 @@ function getSchemeIntent(activityRoot) {
     });
 }
 
-function getActivityAliasXML({ packageName, activityAliases, iconFiles, schemeIntent }) {
+function getActivityAlias({ packageName, activityAliases, iconFiles, schemeIntent }) {
     const activityAliasesNames = activityAliases.map(alias => alias.$['android:name']);
 
     iconFiles.forEach(iconFileName => {

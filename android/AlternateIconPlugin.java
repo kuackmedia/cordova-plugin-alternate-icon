@@ -37,16 +37,70 @@ public class AlternateIconPlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         cordovaActivity = cordova.getActivity();
 
-        if ("change".equals(action)) {
+        if ("getCurrentName".equals(action)) {
             JSONObject options = args.getJSONObject(0);
-            selectedOption = options.getString("selected");
-            availableOptions = options.getJSONArray("available");
+            JSONArray available = options.getJSONArray("available");
+
+            String iconName = getEnabledIconName(available);
+            PluginResult result = new  PluginResult(PluginResult.Status.OK, iconName); 
+            callbackContext.sendPluginResult(result);
+            return true;
+        }
+
+        else if ("change".equals(action)) {
+            updateOptions(args);
+
             PluginResult result = new  PluginResult(PluginResult.Status.OK, selectedOption); 
             callbackContext.sendPluginResult(result);
             return true;
         }
 
+        else if ("changeAndRestart".equals(action)) {
+            updateOptions(args);
+            setSelectedIcon();
+
+            Context context = cordovaActivity.getApplicationContext();
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            cordovaActivity.finishAffinity();
+            cordovaActivity.startActivity(launchIntent);
+
+            PluginResult result = new PluginResult(PluginResult.Status.OK, selectedOption);
+            callbackContext.sendPluginResult(result);
+
+            return true;
+        }
+
         return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        setSelectedIcon();
+    }
+
+    private void updateOptions(JSONArray args) {
+        try {
+            JSONObject options = args.getJSONObject(0);
+            availableOptions = options.getJSONArray("available");
+            selectedOption = options.getString("selected");
+        } catch (JSONException e) {
+        }
+    }
+
+    private void setSelectedIcon() {
+        if (selectedOption == null || availableOptions.length() == 0) {
+            return;
+        }
+
+        setComponentEnabled("MainActivity", selectedOption.equals("null"));
+
+        for (int i = 0; i < availableOptions.length(); i++) {
+            try {
+                String currentOption = availableOptions.getString(i);
+                setComponentEnabled(currentOption, currentOption.equals(selectedOption));
+            } catch (JSONException e) {
+            }
+        }
     }
 
     private void setComponentEnabled(String componentName, Boolean enabled) {
@@ -65,19 +119,43 @@ public class AlternateIconPlugin extends CordovaPlugin {
         );
     }
 
-    @Override
-    public void onDestroy() {
-        if (selectedOption != null && availableOptions.length() > 0) {
-            setComponentEnabled("MainActivity", selectedOption.equals("null"));
+    private int getComponentEnabled(String componentName) {
+        Context context = cordovaActivity.getApplicationContext();
+        String packageName = context.getPackageName();
+        PackageManager pm = cordovaActivity.getPackageManager();
 
-            for (int i = 0; i < availableOptions.length(); i++) {
-                try {
-                    String currentOption = availableOptions.getString(i);
-                    setComponentEnabled(currentOption, currentOption.equals(selectedOption));
-                } catch (JSONException e) {
-                }
-            }
-        }
+        int state = pm.getComponentEnabledSetting(
+            new ComponentName(cordovaActivity, packageName + "." + componentName)
+        );
+
+        return state;
     }
 
+    private String getEnabledIconName(JSONArray available) {
+        Context context = cordovaActivity.getApplicationContext();
+        String packageName = context.getPackageName();
+        PackageManager pm = cordovaActivity.getPackageManager();
+
+        int mainActivityState = getComponentEnabled("MainActivity");
+        if (mainActivityState == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT ||
+            mainActivityState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+            return "default";
+        }
+
+        for (int i = 0; i < available.length(); i++) {
+            try {
+                String optionName = available.getString(i);
+                int optionState = pm.getComponentEnabledSetting(
+                    new ComponentName(cordovaActivity, packageName + "." + optionName)
+                );
+
+                if (optionState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                    return optionName;
+                }
+            } catch (JSONException e) {
+            }
+        }
+
+        return null;
+    }
 }
