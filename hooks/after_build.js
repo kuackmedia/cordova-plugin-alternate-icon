@@ -109,6 +109,7 @@ function getActivityAlias({ packageName, activityAliases, iconFiles, schemeInten
                         'android:name': activityAliasName,
                         'android:targetActivity': `${packageName}.MainActivity`,
                         'android:enabled': false,
+                        'android:exported': false,
                     },
                     'intent-filter': [
                         {
